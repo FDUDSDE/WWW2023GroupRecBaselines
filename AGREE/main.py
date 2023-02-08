@@ -53,7 +53,7 @@ parser.add_argument("--emb_dim", type=int, default=32)
 parser.add_argument("--epoch", type=int, default=30)
 parser.add_argument("--batch_size", type=int, default=256)
 parser.add_argument("--drop_ratio", type=float, default=0.2)
-parser.add_argument("--lr", type=float, default=0.0001)
+parser.add_argument("--lr", type=float, default=0.001)
 parser.add_argument("--topK", type=list, default=[1, 5, 10])
 parser.add_argument("--num_negatives", type=int, default=4)
 
