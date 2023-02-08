@@ -1,5 +1,5 @@
 import torch
-from utils import load_rating_file_to_list, load_rating_file_to_matrix, load_negative_file, load_group_member_to_dict, \
+from datautil import load_rating_file_to_list, load_rating_file_to_matrix, load_negative_file, load_group_member_to_dict, \
     load_rating_file_to_csr_matrix, convert_sp_mat_to_sp_tensor
 import numpy as np
 from torch.utils.data import TensorDataset, DataLoader
@@ -14,7 +14,7 @@ class GroupDataset(object):
         group_path = f"../data/{dataset}/groupRating"
         self.num_negatives = num_negatives
 
-        # user data
+        # User data
         self.user_train_matrix = load_rating_file_to_matrix(user_path+"Train.txt")
         self.user_test_ratings = load_rating_file_to_list(user_path+"Test.txt")
         self.user_test_negatives = load_negative_file(user_path+"Negative.txt")
@@ -24,7 +24,7 @@ class GroupDataset(object):
         print(f"UserItem {self.user_train_matrix.shape} with {len(self.user_train_matrix.keys())} "
               f"interactions, sparsity: {(1-(len(self.user_train_matrix.keys()) / self.num_users / self.num_items)):.5f}")
 
-        # group data
+        # Group data
         self.group_train_matrix = load_rating_file_to_matrix(group_path+"Train.txt")
         self.group_test_ratings = load_rating_file_to_list(group_path+"Test.txt")
         self.group_test_negatives = load_negative_file(group_path+"Negative.txt")
@@ -56,19 +56,15 @@ class GroupDataset(object):
         return graph.coalesce()
 
     def get_train_instances(self, train):
+        """Generate training instances (for each positive pair, generate num_negatives negative samples)"""
         users, pos_items, neg_items = [], [], []
 
         n_users, n_items = train.shape
 
         for (u, i) in train.keys():
-            for _ in range(self.num_negatives):
-                users.append(u)
-                pos_items.append(i)
-
-                j = np.random.randint(n_items)
-                while (u, j) in train:
-                    j = np.random.randint(n_items)
-                neg_items.append(j)
+            users.extend([u]*self.num_negatives)
+            pos_items.extend([i]*self.num_negatives)
+            neg_items.extend(np.random.choice(n_items, self.num_negatives))
 
         pos_neg_items = [[pos_item, neg_item] for pos_item, neg_item in zip(pos_items, neg_items)]
         return users, pos_neg_items

@@ -3,12 +3,6 @@ from collections import defaultdict
 import scipy.sparse as sp
 from scipy.sparse import csr_matrix
 import torch
-import math
-
-
-"""
-Load dataset
-"""
 
 
 def convert_sp_mat_to_sp_tensor(X):
@@ -104,24 +98,3 @@ def load_group_member_to_dict(user_in_group_path):
             group_member_dict[group].append(int(member))
 
     return group_member_dict
-
-
-"""
-Evaluation
-"""
-
-
-def get_hit_k(pred_rank, k):
-    pred_rank_k = pred_rank[:, :k]
-    hit = np.count_nonzero(pred_rank_k == 0)
-    hit = hit / pred_rank_k.shape[0]
-    return round(hit, 5)
-
-
-def get_ndcg_k(pred_rank, k):
-    ndcgs = np.zeros(pred_rank.shape[0])
-    for user in range(pred_rank.shape[0]):
-        for j in range(k):
-            if pred_rank[user][j] == 0:
-                ndcgs[user] = math.log(2) / math.log(j+2)
-    return np.round(np.mean(ndcgs), decimals=5)

@@ -17,7 +17,6 @@ class CubeRec(nn.Module):
         self.num_users = self.dataset.num_users
         self.num_items = self.dataset.num_items
 
-        # TODO: hyper-parameters in args
         self.n_layers = self.args.n_layers
         self.emb_dim = self.args.emb_dim
         self.keep_prob = self.args.keep_prob
@@ -33,6 +32,7 @@ class CubeRec(nn.Module):
         # LightGCN propagation graph
         self.graph = self.dataset.get_sparse_graph().to(self.device)
 
+        # Group aggregation strategy (geometric / attentive)
         if self.args.group_agg == "geometric":
             self.wc = nn.Linear(self.emb_dim, self.emb_dim, bias=False)
             self.wo = nn.Linear(self.emb_dim, self.emb_dim, bias=False)
@@ -145,7 +145,7 @@ class CubeRec(nn.Module):
 
         dis_in = centers - torch.min(upper_right_s, torch.max(lower_left_s, embedding_items))
         dis_in = torch.sqrt(torch.sum(dis_in ** 2, dim=-1)).unsqueeze(-1)
-        # gamma设置为0.3
+        # gamma is set as 0.3
         return dis_out + 0.3 * dis_in
 
     def compute_all(self):
